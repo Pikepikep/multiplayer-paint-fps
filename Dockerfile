@@ -4,14 +4,11 @@ FROM node:20-slim
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy package files first
-COPY package*.json ./
+# Copy all files first
+COPY . .
 
 # Install dependencies
 RUN npm install
-
-# Copy the rest of the application
-COPY . .
 
 # Create necessary directories if they don't exist
 RUN mkdir -p client server
