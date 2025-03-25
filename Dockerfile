@@ -4,17 +4,21 @@ FROM node:20-slim
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy all files first
+# Copy all files
 COPY . .
 
-# Install dependencies
+# Install root dependencies
 RUN npm install
 
-# Create necessary directories if they don't exist
-RUN mkdir -p client server
+# Install server dependencies
+WORKDIR /usr/src/app/server
+RUN npm install
+
+# Return to app root
+WORKDIR /usr/src/app
 
 # Expose port
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "start"] 
+CMD ["node", "server/server.js"] 
