@@ -512,6 +512,138 @@ function createWorld() {
     // Add collision box for triangle
     const triangleBox = new THREE.Box3().setFromObject(trianglePrism);
     obstacles.push({ mesh: trianglePrism, box: triangleBox });
+
+    // Create map structures
+    createMapStructures();
+}
+
+function createMapStructures() {
+    // Create ground
+    const groundGeometry = new THREE.PlaneGeometry(100, 100);
+    const groundMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x808080,
+        roughness: 0.8,
+        metalness: 0.2
+    });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.5;
+    scene.add(ground);
+
+    // Create walls
+    const wallMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x808080,
+        roughness: 0.7,
+        metalness: 0.3
+    });
+
+    // Outer walls
+    const wallGeometry = new THREE.BoxGeometry(100, 20, 1);
+    const walls = [
+        { position: [0, 9.5, -50], rotation: [0, 0, 0] },      // North wall
+        { position: [0, 9.5, 50], rotation: [0, Math.PI, 0] }, // South wall
+        { position: [-50, 9.5, 0], rotation: [0, Math.PI / 2, 0] }, // West wall
+        { position: [50, 9.5, 0], rotation: [0, -Math.PI / 2, 0] }  // East wall
+    ];
+
+    walls.forEach(wall => {
+        const mesh = new THREE.Mesh(wallGeometry, wallMaterial);
+        mesh.position.set(...wall.position);
+        mesh.rotation.set(...wall.rotation);
+        scene.add(mesh);
+    });
+
+    // Add rectangular structures
+    const rectMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x808080,
+        roughness: 0.6,
+        metalness: 0.4
+    });
+
+    // Center structure
+    const centerRect = new THREE.Mesh(
+        new THREE.BoxGeometry(10, 8, 10),
+        rectMaterial
+    );
+    centerRect.position.set(0, 4, 0);
+    scene.add(centerRect);
+
+    // Corner structures
+    const cornerRects = [
+        { position: [20, 4, 20], size: [8, 6, 8] },
+        { position: [-20, 4, 20], size: [8, 6, 8] },
+        { position: [20, 4, -20], size: [8, 6, 8] },
+        { position: [-20, 4, -20], size: [8, 6, 8] }
+    ];
+
+    cornerRects.forEach(rect => {
+        const mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(...rect.size),
+            rectMaterial
+        );
+        mesh.position.set(...rect.position);
+        scene.add(mesh);
+    });
+
+    // Add cylindrical structures
+    const cylinderMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x808080,
+        roughness: 0.5,
+        metalness: 0.5
+    });
+
+    const cylinders = [
+        { position: [15, 3, 15], radius: 2, height: 6 },
+        { position: [-15, 3, 15], radius: 2, height: 6 },
+        { position: [15, 3, -15], radius: 2, height: 6 },
+        { position: [-15, 3, -15], radius: 2, height: 6 }
+    ];
+
+    cylinders.forEach(cylinder => {
+        const mesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(cylinder.radius, cylinder.radius, cylinder.height, 8),
+            cylinderMaterial
+        );
+        mesh.position.set(...cylinder.position);
+        scene.add(mesh);
+    });
+
+    // Add a sphere structure
+    const sphereMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x808080,
+        roughness: 0.4,
+        metalness: 0.6
+    });
+
+    const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(4, 16, 16),
+        sphereMaterial
+    );
+    sphere.position.set(0, 4, 20);
+    scene.add(sphere);
+
+    // Add some cubes for cover
+    const cubeMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x808080,
+        roughness: 0.7,
+        metalness: 0.3
+    });
+
+    const cubes = [
+        { position: [10, 2, 10], size: [4, 4, 4] },
+        { position: [-10, 2, 10], size: [4, 4, 4] },
+        { position: [10, 2, -10], size: [4, 4, 4] },
+        { position: [-10, 2, -10], size: [4, 4, 4] }
+    ];
+
+    cubes.forEach(cube => {
+        const mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(...cube.size),
+            cubeMaterial
+        );
+        mesh.position.set(...cube.position);
+        scene.add(mesh);
+    });
 }
 
 function onMouseClick() {
