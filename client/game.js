@@ -2099,19 +2099,22 @@ function animate() {
     renderer.setScissorTest(false);
     renderer.render(scene, camera);
 
-    // Render minimap (top left corner)
-    const padding = 10;
-    const minimapX = padding;
-    const minimapY = padding;
-    
-    renderer.setViewport(minimapX, window.innerHeight - MINIMAP_SIZE - minimapY, MINIMAP_SIZE, MINIMAP_SIZE);
-    renderer.setScissor(minimapX, window.innerHeight - MINIMAP_SIZE - minimapY, MINIMAP_SIZE, MINIMAP_SIZE);
-    renderer.setScissorTest(true);
-    
-    // Clear background for minimap to white
-    renderer.setClearColor(0xFFFFFF);
-    renderer.render(scene, minimapCamera);
-    renderer.setClearColor(0x87CEEB);  // Reset to sky blue for main view
+    // Only render minimap on non-mobile devices
+    if (!isMobile) {
+        // Render minimap (top left corner)
+        const padding = 10;
+        const minimapX = padding;
+        const minimapY = padding;
+        
+        renderer.setViewport(minimapX, window.innerHeight - MINIMAP_SIZE - minimapY, MINIMAP_SIZE, MINIMAP_SIZE);
+        renderer.setScissor(minimapX, window.innerHeight - MINIMAP_SIZE - minimapY, MINIMAP_SIZE, MINIMAP_SIZE);
+        renderer.setScissorTest(true);
+        
+        // Clear background for minimap to white
+        renderer.setClearColor(0xFFFFFF);
+        renderer.render(scene, minimapCamera);
+        renderer.setClearColor(0x87CEEB);  // Reset to sky blue for main view
+    }
 
     // Update portal effects
     if (portal) {
