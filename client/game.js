@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
+// Add mobile detection
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
 // Initialize socket connection
 const socket = io(window.location.origin, {
     transports: ['websocket', 'polling'],
@@ -109,7 +112,6 @@ const PAINT_PROJECTILE_BLUE = new THREE.MeshBasicMaterial({
 });
 
 // Add at the top with other global variables
-let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 let joystickTouch = null;
 let lookTouch = null;
 let joystickPosition = { x: 0, y: 0 };
@@ -2464,4 +2466,126 @@ document.addEventListener('click', (event) => {
         hidePauseMenu();
     }
 });
+
+// ... existing code ...
+
+function createMinimap() {
+    if (isMobile) return; // Skip minimap creation on mobile devices
+    
+    // Create minimap container
+    const minimapContainer = document.createElement('div');
+    minimapContainer.id = 'minimap';
+    minimapContainer.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 150px;
+        height: 150px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid white;
+        border-radius: 5px;
+        z-index: 1000;
+    `;
+    document.body.appendChild(minimapContainer);
+
+    // Create minimap canvas
+    const minimapCanvas = document.createElement('canvas');
+    minimapCanvas.width = 150;
+    minimapCanvas.height = 150;
+    minimapContainer.appendChild(minimapCanvas);
+
+    // Create minimap camera
+    const minimapCamera = new THREE.OrthographicCamera(
+        -25, 25,  // left, right
+        25, -25,  // top, bottom
+        1, 1000   // near, far
+    );
+    minimapCamera.position.set(0, 30, 0);
+    minimapCamera.lookAt(0, 0, 0);
+    minimapCamera.up.set(0, 0, 1);
+
+    // Create minimap renderer
+    const minimapRenderer = new THREE.WebGLRenderer({
+        canvas: minimapCanvas,
+        alpha: true
+    });
+    minimapRenderer.setSize(150, 150);
+    minimapRenderer.setClearColor(0x000000, 0.5);
+
+    // Create minimap scene
+    const minimapScene = new THREE.Scene();
+    minimapScene.background = null;
+
+    // Add floor to minimap
+    const floorGeometry = new THREE.PlaneGeometry(50, 50);
+    const floorMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.3
+    });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = 0.1;
+    minimapScene.add(floor);
+
+    // Add player indicator
+    const playerIndicator = new THREE.Mesh(
+        new THREE.CircleGeometry(0.5, 32),
+        new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    );
+    playerIndicator.rotation.x = -Math.PI / 2;
+    playerIndicator.position.y = 0.2;
+    minimapScene.add(playerIndicator);
+
+    // Add other players to minimap
+    const otherPlayerIndicators = new Map();
+
+    // Function to update minimap
+    function updateMinimap() {
+        if (isMobile) return; // Skip minimap updates on mobile devices
+        
+        // Update player indicator position
+        playerIndicator.position.x = camera.position.x;
+        playerIndicator.position.z = camera.position.z;
+        playerIndicator.material.color.setHex(playerTeam === 'red' ? 0xff0000 : 0x0000ff);
+
+        // Update other players
+        Object.entries(otherPlayers).forEach(([id, player]) => {
+            let indicator = otherPlayerIndicators.get(id);
+            if (!indicator) {
+                indicator = new THREE.Mesh(
+                    new THREE.CircleGeometry(0.5, 32),
+                    new THREE.MeshBasicMaterial({ color: player.team === 'red' ? 0xff0000 : 0x0000ff })
+                );
+                indicator.rotation.x = -Math.PI / 2;
+                indicator.position.y = 0.2;
+                minimapScene.add(indicator);
+                otherPlayerIndicators.set(id, indicator);
+            }
+            indicator.position.x = player.position[0];
+            indicator.position.z = player.position[2];
+            indicator.material.color.setHex(player.team === 'red' ? 0xff0000 : 0x0000ff);
+        });
+
+        // Remove indicators for disconnected players
+        otherPlayerIndicators.forEach((indicator, id) => {
+            if (!otherPlayers[id]) {
+                minimapScene.remove(indicator);
+                otherPlayerIndicators.delete(id);
+            }
+        });
+
+        // Render minimap
+        minimapRenderer.render(minimapScene, minimapCamera);
+    }
+
+    // Add updateMinimap to animation loop
+    const originalAnimate = animate;
+    animate = function() {
+        originalAnimate();
+        updateMinimap();
+    };
+}
+
+// ... existing code ...
 
