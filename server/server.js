@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: process.env.CORS_ORIGIN || "*",
         methods: ["GET", "POST"]
     },
     transports: ['websocket', 'polling']
@@ -34,11 +34,39 @@ app.get('/health', (req, res) => {
 
 // Serve static files from the 'client' directory
 const clientPath = path.join(__dirname, '../client');
-app.use(express.static(clientPath));
+console.log('Serving static files from:', clientPath);
+
+app.use(express.static(clientPath, {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.gltf')) {
+            res.setHeader('Content-Type', 'model/gltf+json');
+            console.log('Serving GLTF file:', path);
+        }
+    }
+}));
 
 // Serve index.html explicitly when accessing "/"
 app.get('/', (req, res) => {
+    console.log('Serving index.html');
     res.sendFile(path.join(clientPath, 'index.html'));
+});
+
+// Add a specific route for model files
+app.get('/models/:filename', (req, res) => {
+    const modelPath = path.join(clientPath, 'models', req.params.filename);
+    console.log('Attempting to serve model:', modelPath);
+    res.sendFile(modelPath, (err) => {
+        if (err) {
+            console.error('Error serving model:', err);
+            res.status(404).send('Model not found');
+        }
+    });
+});
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).send('Something broke!');
 });
 
 io.on('connection', (socket) => {
@@ -152,7 +180,9 @@ io.on('connection', (socket) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';  // Listen on all network interfaces
+server.listen(PORT, HOST, () => {
+    console.log(`Server running on ${HOST}:${PORT}`);
     console.log(`Maximum players supported: ${MAX_PLAYERS}`);
+    console.log('Environment:', process.env.NODE_ENV || 'development');
 });

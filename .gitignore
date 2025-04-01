@@ -17,4 +17,24 @@ yarn-error.log
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional yarn cache directory
+.yarn
+*.yarn.lock 

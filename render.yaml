@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: multiplayer-paint-fps
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+    healthCheckPath: /health 

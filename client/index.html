@@ -2,11 +2,160 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Multiplayer Paint FPS</title>
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.161.0/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.161.0/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/libs/draco/draco_decoder.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+        }
+        
+        #teamSelection {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .team-btn {
+            padding: 20px 40px;
+            margin: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+        
+        #redTeamBtn {
+            background-color: #ff4444;
+        }
+        
+        #blueTeamBtn {
+            background-color: #4444ff;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        #gameUI {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 20px;
+            text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+        }
+        
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        .crosshair-line {
+            position: absolute;
+            background-color: white;
+        }
+        
+        .crosshair-horizontal {
+            width: 20px;
+            height: 2px;
+            left: -10px;
+        }
+        
+        .crosshair-vertical {
+            width: 2px;
+            height: 20px;
+            top: -10px;
+        }
+
+        /* Mobile Controls */
+        #mobileControls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        #joystickArea {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            touch-action: none;
+        }
+
+        #joystickKnob {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        #shootButton {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 0, 0, 0.5);
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 16px;
+            touch-action: none;
+        }
+
+        #lookArea {
+            position: absolute;
+            right: 120px;
+            bottom: 20px;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            touch-action: none;
+        }
+
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: block;
+            }
+            .team-btn {
+                padding: 15px 30px;
+                font-size: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="teamSelection" class="screen">
@@ -20,7 +169,14 @@
         <div id="crosshair">+</div>
         <div id="hits">Hits: 0/3</div>
     </div>
-    <script src="game.js" type="module"></script>
+    <div id="mobileControls" class="hidden">
+        <div id="joystickArea">
+            <div id="joystickKnob"></div>
+        </div>
+        <div id="lookArea"></div>
+        <button id="shootButton">SHOOT</button>
+    </div>
+    <script type="module" src="game.js"></script>
 </body>
 </html>
 
